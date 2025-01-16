@@ -53,7 +53,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
           onClick={() => updateStatusTodo(todo.id)}
         />
       </label>
-      {!isEditing && (
+      {!isEditing ? (
         <span
           data-cy="TodoTitle"
           className="todo__title"
@@ -61,22 +61,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
         >
           {isEditing ? todo.title : editedTitle}
         </span>
-      )}
-
-      {/* Remove button appears only on hover */}
-      {!isEditing && (
-        <button
-          type="button"
-          className="todo__remove"
-          data-cy="TodoDelete"
-          onClick={() => deleteTodo(todo.id)}
-        >
-          ×
-        </button>
-      )}
-
-      {/* This form is shown instead of the title and remove button */}
-      {isEditing && (
+      ) : (
         <form
           onSubmit={event => {
             event.preventDefault();
@@ -97,12 +82,22 @@ export const TodoItem: React.FC<TodoItemProps> = ({
         </form>
       )}
 
+      {!isEditing && (
+        <button
+          type="button"
+          className="todo__remove"
+          data-cy="TodoDelete"
+          onClick={() => deleteTodo(todo.id)}
+        >
+          ×
+        </button>
+      )}
+
       <div data-cy="TodoLoader" className="modal overlay">
         <div className="modal-background has-background-white-ter" />
         <div className="loader" />
       </div>
 
-      {/* overlay will cover the todo while it is being deleted or updated */}
       {isLoading && (
         <div
           data-cy="TodoLoader"

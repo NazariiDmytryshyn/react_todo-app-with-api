@@ -38,15 +38,6 @@ export const TodoErrors: React.FC<TodoErrorsProps> = ({
         onClick={() => onUpdateError('')}
       />
       {errors}
-      {/* Unable to load todos
-      <br />
-      Title should not be empty
-      <br />
-      Unable to add a todo
-      <br />
-      Unable to delete a todo
-      <br />
-      Unable to update a todo */}
     </div>
   );
 };

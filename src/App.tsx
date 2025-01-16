@@ -36,14 +36,12 @@ export const App: React.FC = () => {
   const [loadingTodoIds, setLoadingTodoIds] = useState<number[]>([]);
 
   useEffect(() => {
-    setIsLoading(true);
     getTodos()
       .then(todosFromServer => setTodos(todosFromServer))
       .catch(err => {
         setErrorMessage(ErrorMessage.Get);
         throw err;
-      })
-      .finally(() => setIsLoading(false));
+      });
   }, []);
 
   const focusField = () => {
@@ -254,7 +252,7 @@ export const App: React.FC = () => {
     } catch {
       setErrorMessage(ErrorMessage.Update);
     } finally {
-      setLoadingTodoIds([]);
+      setLoadingTodoIds(prevIds => prevIds.filter(todoId => todoId !== id));
     }
   };
 
