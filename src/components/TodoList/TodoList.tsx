@@ -9,9 +9,10 @@ interface TodoListProps {
   todos: Todo[];
   deleteTodo: (id: number) => void;
   todoTemp: Todo | null;
-  updateStatusTodo: (id: number) => void;
+  updateStatusTodo: (todo: Todo) => void;
   todoIds: number[];
-  onChangeTitle: (id: number, newTitle: string) => void;
+  onChangeTitle: (todo: Todo, newTitle: string) => Promise<boolean>;
+  errorMessage: string;
 }
 
 export const TodoList: React.FC<TodoListProps> = ({
@@ -21,6 +22,7 @@ export const TodoList: React.FC<TodoListProps> = ({
   updateStatusTodo,
   todoIds,
   onChangeTitle,
+  errorMessage,
 }) => {
   return (
     <section className="todoapp__main" data-cy="TodoList">
@@ -34,6 +36,7 @@ export const TodoList: React.FC<TodoListProps> = ({
               todoIds={todoIds}
               updateStatusTodo={updateStatusTodo}
               onChangeTitle={onChangeTitle}
+              errorMessage={errorMessage}
             />
           </CSSTransition>
         ))}
@@ -41,7 +44,6 @@ export const TodoList: React.FC<TodoListProps> = ({
 
       {todoTemp && (
         <div data-cy="Todo" className={`todo`}>
-          {/*eslint-disable-next-line jsx-a11y/label-has-associated-control*/}
           <label className="todo__status-label">
             <input
               data-cy="TodoStatus"

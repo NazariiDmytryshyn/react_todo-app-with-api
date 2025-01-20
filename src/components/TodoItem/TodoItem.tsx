@@ -7,9 +7,10 @@ import cn from 'classnames';
 interface TodoItemProps {
   todo: Todo;
   deleteTodo: (id: number) => void;
-  updateStatusTodo: (id: number) => void;
+  updateStatusTodo: (todo: Todo) => void;
   todoIds: number[];
-  onChangeTitle: (id: number, newTitle: string) => void;
+  onChangeTitle: (todo: Todo, newTitle: string) => Promise<boolean>;
+  errorMessage: string;
 }
 
 export const TodoItem: React.FC<TodoItemProps> = ({
@@ -21,17 +22,48 @@ export const TodoItem: React.FC<TodoItemProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(todo.title);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const isLoading = todoIds.includes(todo.id);
-
-  const handleSave = () => {
-    onChangeTitle(todo.id, editedTitle);
-    setIsEditing(false);
-  };
+  const isTodoLoading = todoIds.includes(todo.id);
 
   const handleCancel = () => {
     setEditedTitle(todo.title);
     setIsEditing(false);
+  };
+
+  const handleSave = async () => {
+    if (isSaving) {
+      return;
+    }
+
+    const trimmedTitle = editedTitle.trim();
+
+    setIsSaving(true);
+
+    try {
+      if (!trimmedTitle) {
+        const isSuccess = await onChangeTitle(todo, '');
+
+        if (!isSuccess) {
+          return;
+        }
+
+        return;
+      }
+
+      if (trimmedTitle !== todo.title) {
+        const isSuccess = await onChangeTitle(todo, trimmedTitle);
+
+        if (isSuccess) {
+          setEditedTitle(trimmedTitle);
+          setIsEditing(false);
+        }
+      } else {
+        setIsEditing(false);
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -39,6 +71,12 @@ export const TodoItem: React.FC<TodoItemProps> = ({
       handleSave();
     } else if (event.key === 'Escape') {
       handleCancel();
+    }
+  };
+
+  const handleCheckboxClick = () => {
+    if (!isEditing || editedTitle.trim() === todo.title) {
+      updateStatusTodo(todo);
     }
   };
 
@@ -50,16 +88,18 @@ export const TodoItem: React.FC<TodoItemProps> = ({
           type="checkbox"
           className="todo__status"
           checked={todo.completed}
-          onClick={() => updateStatusTodo(todo.id)}
+          onChange={handleCheckboxClick}
         />
       </label>
       {!isEditing ? (
         <span
           data-cy="TodoTitle"
-          className="todo__title"
+          className={cn('todo__title', {
+            'todo__title--placeholder': !todo.title,
+          })}
           onDoubleClick={() => setIsEditing(true)}
         >
-          {isEditing ? todo.title : editedTitle}
+          {editedTitle || <em>Empty todo will be deleted</em>}
         </span>
       ) : (
         <form
@@ -98,7 +138,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
         <div className="loader" />
       </div>
 
-      {isLoading && (
+      {isTodoLoading && (
         <div
           data-cy="TodoLoader"
           className={cn('modal overlay', {
